@@ -1,13 +1,14 @@
 import functools
-import os
 from typing import List
 
-from pydantic import BaseSettings, Field, validator
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     """
     Application settings loaded from environment variables with sensible defaults.
+    Uses pydantic-settings for Pydantic v2 compatibility.
     """
 
     # Service metadata
@@ -28,14 +29,15 @@ class Settings(BaseSettings):
         default_factory=lambda: ["*"], description="Allowed CORS origins"
     )
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "case_sensitive": False,
+    }
 
-    @validator("PORT", pre=True)
+    @field_validator("PORT", mode="before")
     def _coerce_port(cls, v):  # type: ignore
-        # Allow PORT to be set as string in env
+        # Allow PORT to be set as string in env; default to 3000 on failure
         try:
             return int(v)
         except Exception:
@@ -43,6 +45,7 @@ class Settings(BaseSettings):
 
 
 @functools.lru_cache()
+# PUBLIC_INTERFACE
 def get_settings() -> Settings:
     """
     Returns a cached Settings instance.

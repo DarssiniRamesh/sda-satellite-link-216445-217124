@@ -37,7 +37,7 @@ def _ensure_repo_root_on_sys_path() -> None:
         repo_root = os.path.abspath(os.path.join(this_dir, os.pardir))  # .. => <repo>/sda-.../
         # Add the parent of that path as well if root-level shim might be needed
         top_root = os.path.abspath(os.path.join(repo_root, os.pardir))
-        for candidate in (top_root, repo_root):
+        for candidate in (repo_root, top_root):
             if candidate and candidate not in sys.path:
                 sys.path.insert(0, candidate)
     except Exception:
@@ -47,23 +47,29 @@ def _ensure_repo_root_on_sys_path() -> None:
 
 # PUBLIC_INTERFACE
 def get_app() -> Any:
-    """Return the FastAPI app instance from the service's app module.
+    """Return the FastAPI app instance for uvicorn to load.
 
-    Tries importing from both repository root and local container contexts.
-    Minimally adjusts sys.path if needed to locate the repo root.
+    Import strategy:
+      1) Try local package import: from app.main import app
+      2) If it fails, add repo roots to sys.path and try monorepo import:
+         from PhysicalLayerService.app.main import app
+      3) As a last resort, try local import again.
+
+    Returns:
+        Any: FastAPI application object.
     """
-    # First, attempt monorepo-style import
+    # First, attempt local import (most common when running inside folder)
     try:
-        from PhysicalLayerService.app.main import app  # type: ignore
+        from app.main import app  # type: ignore
         return app
     except Exception:
-        # If that failed, try to minimally fix sys.path and retry
+        # If that failed, try to minimally fix sys.path and retry monorepo import
         _ensure_repo_root_on_sys_path()
         try:
             from PhysicalLayerService.app.main import app  # type: ignore
             return app
         except Exception:
-            # Finally, fallback to local package import
+            # Finally, fallback to local package import again
             from app.main import app  # type: ignore
             return app
 
