@@ -49,6 +49,10 @@ uvicorn main:app --host 0.0.0.0 --port 3000
 ```
 This repository includes a root-level `main.py` shim that exposes `main:app` and imports from `PhysicalLayerService/app/main.py`, so the above command works without activating a virtualenv or modifying PYTHONPATH.
 
+Dependency install note:
+- Preview/CI typically installs dependencies from the container root `requirements.txt`. That file includes `pydantic-settings>=2,<3`, `pydantic>=2,<3`, `fastapi`, `uvicorn`, and `python-dotenv`.
+- A minimal runtime shim is present in `app/core/config.py` to avoid startup failure if `pydantic-settings` is missing; however, you should ensure it is installed for full functionality.
+
 ## Endpoints
 - `GET /health` -> 200 OK with status and timestamp
 - `GET /version` -> service name and semantic version

@@ -20,3 +20,4 @@ This repository contains multiple backend services. This step scaffolds the Phys
 
 Notes:
 - The root-level `main.py` is a lightweight shim that imports the FastAPI `app` from `PhysicalLayerService/app/main.py`, ensuring `uvicorn main:app` works without a virtualenv.
+- Preview/CI installers typically run `pip install -r requirements.txt` from the container root. The container root `requirements.txt` includes `pydantic-settings>=2,<3` and related dependencies required for startup.
