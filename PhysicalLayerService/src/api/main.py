@@ -1,8 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+app = FastAPI(
+    title="Physical Layer Service",
+    description="FastAPI application for the Physical Layer Service (PAT, laser control, telemetry).",
+    version="0.1.0",
+)
 
+# Enable permissive CORS for development/previews; consider restricting in production
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -11,6 +16,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
-def health_check():
+
+# PUBLIC_INTERFACE
+@app.get("/", tags=["Health"], summary="Health Check")
+def health_check() -> dict:
+    """Simple health check endpoint.
+
+    Returns:
+        dict: A JSON object indicating service health.
+    """
     return {"message": "Healthy"}
