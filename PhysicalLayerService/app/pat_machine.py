@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from .models.pat_state import (
@@ -20,9 +20,10 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class _LaserState:
-    config: LaserConfig = LaserConfig()
-    am: AMConfig = AMConfig()
-    tpsl: TPSLConfig = TPSLConfig()
+    # Use default_factory to avoid mutable default instances being shared across class instances
+    config: LaserConfig = field(default_factory=LaserConfig)
+    am: AMConfig = field(default_factory=AMConfig)
+    tpsl: TPSLConfig = field(default_factory=TPSLConfig)
 
 
 class PATStateMachine:
