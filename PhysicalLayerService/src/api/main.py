@@ -1,6 +1,13 @@
+"""FastAPI application for the Physical Layer Service (PAT, laser control, telemetry).
+
+This module defines the ASGI app used by uvicorn. It is imported by the top-level
+ASGI entrypoint (main.py) and can also be run via `python -m src.api`.
+"""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+# PUBLIC_INTERFACE
 app = FastAPI(
     title="Physical Layer Service",
     description="FastAPI application for the Physical Layer Service (PAT, laser control, telemetry).",
