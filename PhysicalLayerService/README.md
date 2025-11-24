@@ -25,6 +25,17 @@ export PORT=3000
 python -m app.main
 ```
 
+### One-line startup without a pre-created virtualenv
+This repository includes a helper script that installs requirements (if missing) and starts the service:
+```
+./run.sh
+```
+You can override the port via environment variable:
+```
+PORT=3000 ./run.sh
+```
+
 ## Notes
 - CORS is permissive for development and can be restricted later.
 - The preview/start mechanism in your environment can import `app.main:app` directly.
+- Correct Uvicorn import path: `app.main:app` (not `main:app`).

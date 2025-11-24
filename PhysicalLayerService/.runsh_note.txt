@@ -1,0 +1,2 @@
+If your environment does not preserve executable bits, make run.sh executable:
+chmod +x run.sh

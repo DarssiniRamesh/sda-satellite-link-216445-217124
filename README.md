@@ -15,3 +15,8 @@ This is the initial README file for the project.
     pip install -r requirements.txt
     uvicorn app.main:app --host 0.0.0.0 --port 3000
     ```
+  - One-line start without venv:
+    ```
+    cd PhysicalLayerService
+    ./run.sh           # defaults to PORT=3000, use PORT=xxxx to override
+    ```
