@@ -4,6 +4,11 @@ from typing import Dict, Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .routers.pat import router as pat_router
+from .routers.laser import router as laser_router, am_router as am_cfg_router
+from .routers.safety import router as safety_router
+from .routers.telemetry import router as telemetry_router
+
 SERVICE_NAME = "PhysicalLayerService"
 DEFAULT_PORT = 3000
 
@@ -11,11 +16,17 @@ DEFAULT_PORT = 3000
 # PUBLIC_INTERFACE
 app = FastAPI(
     title=f"{SERVICE_NAME} API",
-    description="FastAPI service scaffolding for the Physical Layer Service (PAT, laser control, modulation, telemetry).",
-    version="0.1.0",
+    description="Physical Layer Service: PAT state machine, laser control, AM tracking tone, telemetry.",
+    version="0.2.0",
     openapi_tags=[
         {"name": "health", "description": "Health and liveness checks"},
         {"name": "meta", "description": "Informational endpoints"},
+        {"name": "pat", "description": "Pointing, Acquisition, and Tracking control"},
+        {"name": "laser", "description": "Laser configuration"},
+        {"name": "am", "description": "AM tracking tone configuration"},
+        {"name": "telemetry", "description": "Telemetry retrieval and streaming"},
+        {"name": "safety", "description": "Safety limits (TPSL)"},
+        {"name": "power", "description": "Power management"},
     ],
     contact={"name": "PhysicalLayerService", "url": "https://example.com"},
     license_info={"name": "Proprietary"},
@@ -29,6 +40,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Register routers
+app.include_router(pat_router)
+app.include_router(laser_router)
+app.include_router(am_cfg_router)
+app.include_router(safety_router)
+app.include_router(telemetry_router)
+
 
 # PUBLIC_INTERFACE
 @app.get("/", tags=["meta"], summary="Root info", description="Returns basic service identifier and status.")
@@ -61,13 +80,40 @@ def info() -> Dict[str, Any]:
     port = int(os.getenv("PORT", DEFAULT_PORT))
     return {
         "service": SERVICE_NAME,
-        "version": "0.1.0",
-        "description": "Physical Layer Service scaffolding",
+        "version": "0.2.0",
+        "description": "Physical Layer Service with PAT, laser, telemetry, and safety endpoints",
         "host": "0.0.0.0",
         "defaultPort": DEFAULT_PORT,
         "effectivePort": port,
         "env": {
             "PORT": os.getenv("PORT"),
+        },
+        "websocketHelp": "/telemetry/ws-help",
+    }
+
+
+# PUBLIC_INTERFACE
+@app.get(
+    "/telemetry/ws-help",
+    tags=["telemetry"],
+    summary="WebSocket usage help",
+    description="Provides usage notes for the telemetry WebSocket endpoint at /telemetry/ws.",
+)
+def telemetry_ws_help() -> Dict[str, Any]:
+    """Returns documentation for telemetry WebSocket usage."""
+    return {
+        "endpoint": "/telemetry/ws",
+        "operationId": "telemetryWs",
+        "summary": "Receive Telemetry frames over WebSocket",
+        "notes": [
+            "Connect to ws://<host>/telemetry/ws",
+            "Server sends JSON Telemetry objects at ~2 Hz (mocked)",
+            "Fields: state, timestamp (UTC), linkQuality (BLER, RSSI, syncStatus)",
+        ],
+        "example": {
+            "state": "coarse_acq",
+            "timestamp": "2024-01-01T00:00:00Z",
+            "linkQuality": {"BLER": 0.02, "RSSI": -67.2, "syncStatus": "acquiring"},
         },
     }
 
