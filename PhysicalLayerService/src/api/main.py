@@ -8,6 +8,8 @@ from typing import Dict
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import logging
+import os
 
 # PUBLIC_INTERFACE
 app = FastAPI(
@@ -27,6 +29,22 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+_logger = logging.getLogger(__name__)
+
+@app.on_event("startup")
+async def _log_docs_urls() -> None:
+    port = os.getenv("PORT") or "5000"
+    host = "0.0.0.0"
+    try:
+        p = int(port)
+        if not (1 <= p <= 65535):
+            port = "5000"
+    except ValueError:
+        port = "5000"
+    _logger.info("Physical Layer Service started")
+    _logger.info("Swagger UI: http://%s:%s/docs", host, port)
+    _logger.info("OpenAPI JSON: http://%s:%s/openapi.json", host, port)
 
 
 # PUBLIC_INTERFACE
