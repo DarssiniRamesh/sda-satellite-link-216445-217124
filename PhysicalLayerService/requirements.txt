@@ -1,11 +1,14 @@
 # Mirrored from container-root requirements to avoid drift.
+# NOTE: Preview/CI should install from the container-root requirements.txt.
+# This file remains for local dev parity.
 # FastAPI stack
 fastapi
 uvicorn
 
 # Pydantic v2 and settings management
 pydantic>=2,<3
-pydantic-settings>=2.0.0
+# Ensure correct package name with hyphen
+pydantic-settings>=2,<3
 
 # .env loading support
 python-dotenv

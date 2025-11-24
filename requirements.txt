@@ -8,7 +8,7 @@ uvicorn
 
 # Pydantic v2 and settings management
 pydantic>=2,<3
-pydantic-settings>=2.0.0
+pydantic-settings>=2,<3
 
 # .env loading support (used by BaseSettings env_file behavior and local runs)
 python-dotenv
