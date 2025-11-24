@@ -1,23 +1,22 @@
 import functools
 import logging
 import os
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
 logger = logging.getLogger(__name__)
 
-# Attempt to import BaseSettings from pydantic-settings (v2)
-# If unavailable, provide a minimal shim using BaseModel that reads from os.environ
+# Robust import strategy: prefer pydantic-settings; if unavailable, fall back to local shim.
+_SETTINGS_BACKEND: str = "pydantic-settings"
 try:
     from pydantic_settings import BaseSettings  # type: ignore
-    _SETTINGS_BACKEND = "pydantic-settings"
 except Exception as exc:
+    # Fallback to shim that emulates BaseSettings enough for our needs.
     _SETTINGS_BACKEND = "shim"
-    logger.error(
-        "pydantic-settings is not installed or failed to import (%s). "
-        "Proceeding with a minimal shim. "
-        "To install, ensure requirements include 'pydantic-settings>=2,<3' and run: pip install -r requirements.txt",
+    logger.warning(
+        "pydantic-settings not available (%s). Using minimal BaseSettings shim. "
+        "Install 'pydantic-settings>=2,<3' for full functionality.",
         exc,
     )
 
@@ -25,15 +24,14 @@ except Exception as exc:
         """
         Minimal shim for environments missing pydantic-settings.
 
-        This shim:
-        - Provides a .model_config attribute compatible with Pydantic v2 config usage.
-        - On instantiation, overlays fields with values from environment variables (case-insensitive),
-          performing simple type coercion similar to BaseSettings for common types.
-        - Ignores unknown env vars.
-        NOTE: This is a best-effort fallback to avoid startup crashes in preview/CI environments.
+        Behavior:
+        - Provides a model_config attribute compatible with common Pydantic v2 settings patterns.
+        - On instantiation, overlays model fields with values from environment variables (case-insensitive).
+        - Simple type coercion for int, bool, float, and basic comma-separated lists.
+        - Silently ignores conversion errors to avoid startup failure.
         """
 
-        # Default config mirror; not functionally used but kept for compatibility
+        # Default config semantics (best-effort)
         model_config: Dict[str, Any] = {
             "env_file": ".env",
             "env_file_encoding": "utf-8",
@@ -44,22 +42,25 @@ except Exception as exc:
         def __init__(self, **data: Any) -> None:
             values = dict(data)
             # Overlay with environment values
-            for field_name, field_info in self.model_fields.items():  # type: ignore[attr-defined]
+            model_fields = getattr(self, "model_fields", None)  # type: ignore[attr-defined]
+            if not model_fields and hasattr(type(self), "model_fields"):
+                model_fields = getattr(type(self), "model_fields")  # type: ignore[attr-defined]
+            for field_name, field_info in (model_fields or {}).items():  # type: ignore[union-attr]
                 env_key = field_name
-                # Try exact match; if not found and case-insensitive, try uppercase
-                env_val = os.getenv(env_key)
+                # Try exact match then uppercase
+                env_val: Optional[str] = os.getenv(env_key)
                 if env_val is None:
                     env_val = os.getenv(env_key.upper())
                 if env_val is None:
                     continue
 
                 # Basic coercion for common types
-                annotation = field_info.annotation
+                annotation = getattr(field_info, "annotation", None)
                 try:
                     if annotation in (int,):
                         values[field_name] = int(env_val)
                     elif annotation in (bool,):
-                        values[field_name] = env_val.lower() in ("1", "true", "yes", "on")
+                        values[field_name] = env_val.strip().lower() in ("1", "true", "yes", "on")
                     elif annotation in (float,):
                         values[field_name] = float(env_val)
                     elif annotation in (list, List[str]):  # naive comma-separated list
@@ -67,7 +68,7 @@ except Exception as exc:
                     else:
                         values[field_name] = env_val
                 except Exception:
-                    # On failure, keep default
+                    # Keep provided default if coercion fails
                     pass
             super().__init__(**values)
 
@@ -75,7 +76,7 @@ except Exception as exc:
 class Settings(BaseSettings):
     """
     Application settings loaded from environment variables with sensible defaults.
-    Uses pydantic-settings for Pydantic v2 compatibility when available, otherwise a minimal shim.
+    Uses pydantic-settings when available, otherwise a minimal shim to avoid crashes.
     """
 
     # Service metadata
@@ -96,6 +97,7 @@ class Settings(BaseSettings):
         default_factory=lambda: ["*"], description="Allowed CORS origins"
     )
 
+    # Pydantic v2 config
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

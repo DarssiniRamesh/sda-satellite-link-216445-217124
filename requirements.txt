@@ -1,12 +1,12 @@
 # Root-level requirements for the PhysicalLayerService container.
-# This file is used by preview/CI installers that run pip install from the container root.
-# It mirrors the essential runtime dependencies required by the service.
+# This file is used by preview/CI installers that run `pip install -r requirements.txt` from the container root.
+# Ensure these exactly match required runtime deps and correct package names.
 
 # FastAPI stack
 fastapi
 uvicorn
 
-# Pydantic v2 and settings management
+# Pydantic v2 and settings management (correct package name uses hyphen)
 pydantic>=2,<3
 pydantic-settings>=2,<3
 
