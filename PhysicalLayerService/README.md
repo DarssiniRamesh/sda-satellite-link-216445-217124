@@ -12,7 +12,11 @@ The preview system manages ports automatically, but for local runs:
 
 ```bash
 pip install -r requirements.txt
-# From the container root, serve the app module:
+
+# Option A: Using the thin top-level entrypoint (matches orchestrators):
+uvicorn main:app --host 0.0.0.0 --port "${PORT:-8000}"
+
+# Option B: Direct module path:
 uvicorn src.api.main:app --host 0.0.0.0 --port "${PORT:-8000}"
 ```
 
