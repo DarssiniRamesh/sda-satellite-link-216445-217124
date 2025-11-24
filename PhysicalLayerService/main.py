@@ -12,6 +12,7 @@ Notes:
 
 # PUBLIC_INTERFACE
 from src.api.main import app  # FastAPI instance
+"""FastAPI app instance re-exported for uvicorn entrypoint (main:app)."""
 
 # Explicit module export for tooling and linters
 __all__ = ["app"]

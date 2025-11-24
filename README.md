@@ -29,4 +29,10 @@ Optional uvicorn flags can be configured via environment variables:
 - `UVICORN_WORKERS` (integer)
 - `UVICORN_LOG_LEVEL` (e.g., info, debug)
 
+Health and Docs:
+- Liveness: http://localhost:3001/
+- Readiness: http://localhost:3001/health
+- Swagger UI: http://localhost:3001/docs
+- OpenAPI JSON: http://localhost:3001/openapi.json
+
 Refer to `.env.example` for defaults. You can copy `.env.example` to `.env` and adjust as needed.

@@ -60,6 +60,7 @@ def run() -> None:
         workers=int(os.getenv("UVICORN_WORKERS", "1")),
         log_level=os.getenv("UVICORN_LOG_LEVEL", "info"),
     )
+    # Note: Swagger UI is enabled by default at /docs and OpenAPI JSON at /openapi.json
 
 
 if __name__ == "__main__":
