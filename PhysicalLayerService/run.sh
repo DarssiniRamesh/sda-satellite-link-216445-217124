@@ -3,7 +3,7 @@
 # - Installs dependencies if missing
 # - Starts uvicorn with the correct app import path
 # - Does not require a pre-created virtual environment
-# - Binds to 0.0.0.0 and defaults to port 3000 (overridable via PORT)
+# - Binds to 0.0.0.0 and defaults to port 3000 (overridable via PORT env or .env)
 
 set -euo pipefail
 

@@ -35,10 +35,19 @@ This repository includes a helper script that installs requirements (if missing)
 ```
 ./run.sh
 ```
-You can override the port via environment variable:
+You can override the port via environment variable (defaults to 3000 if unset):
 ```
 PORT=3000 ./run.sh
 ```
+
+### Environment variables
+Copy `.env.example` to `.env` and adjust as needed:
+```
+cp .env.example .env
+# Edit .env to change the port; default is 3000
+```
+The service uses:
+- `PORT` — listening port for the API (default 3000)
 
 ## Notes
 - CORS is permissive for development and can be restricted later.
