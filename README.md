@@ -6,7 +6,7 @@ This is the initial README file for the project.
 
 - PhysicalLayerService (FastAPI)
   - Path: `PhysicalLayerService/`
-  - App import: `app.main:app`
+  - App import: Preferred `app.main:app` (also supports `main:app` for compatibility)
   - Default port: 3000 (overridable via `PORT` env var)
   - Health: `GET /health` -> `{"status":"ok"}`
   - Quick start:
@@ -15,6 +15,7 @@ This is the initial README file for the project.
     pip install -r requirements.txt
     uvicorn app.main:app --host 0.0.0.0 --port 3000
     ```
+    If your environment attempts `uvicorn main:app`, it will also work due to a compatibility shim.
   - One-line start without venv:
     ```
     cd PhysicalLayerService

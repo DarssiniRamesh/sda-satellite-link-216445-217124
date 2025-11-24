@@ -38,4 +38,4 @@ PORT=3000 ./run.sh
 ## Notes
 - CORS is permissive for development and can be restricted later.
 - The preview/start mechanism in your environment can import `app.main:app` directly.
-- Correct Uvicorn import path: `app.main:app` (not `main:app`).
+- Correct Uvicorn import path: `app.main:app` (not `main:app`), however a compatibility shim at `main.py` has been provided so `uvicorn main:app` will also work if your orchestrator uses that path.
