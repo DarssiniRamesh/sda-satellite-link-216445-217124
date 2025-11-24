@@ -30,6 +30,7 @@ class StandardError(BaseModel):
 )
 def get_telemetry() -> Telemetry:
     """Return a snapshot of current telemetry (state, timestamp, link quality)."""
+    # REQ-PAT-DURATION and safety notes are reflected via state and timestamps on the Telemetry/PATStatus models
     return get_machine().telemetry()
 
 

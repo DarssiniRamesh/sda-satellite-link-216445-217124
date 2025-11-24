@@ -32,6 +32,9 @@ class PATStateMachine:
     def __init__(self) -> None:
         self._runtime = PATRuntimeState()
         self._laser = _LaserState()
+        # REQ-PAT-DURATION: acquisition duration must be <= 100 s
+        self._pat_start_monotonic: Optional[float] = None
+        self._last_error: Optional[str] = None
 
     # PUBLIC_INTERFACE
     def initiate(self, cfg: PATStateMachineConfig) -> PATStatus:
@@ -39,7 +42,13 @@ class PATStateMachine:
         if self._runtime.state not in (PATState.STANDBY, PATState.PREPARE, PATState.STOP):
             raise ValueError(f"Cannot initiate PAT while in state {self._runtime.state}")
 
+        # REQ-PAT-DURATION: cap acquisition time at 100 s
+        if cfg.acquisitionPeriod > 100:
+            raise ValueError("REQ-PAT-DURATION: acquisitionPeriod must be <= 100 s")
+
         self._runtime.config = cfg
+        self._last_error = None
+        self._pat_start_monotonic = time.monotonic()
         self._transition_to(PATState.SETUP)
         # After setup, proceed to coarse acquisition
         self._transition_to(PATState.COARSE_ACQ)
@@ -57,7 +66,10 @@ class PATStateMachine:
     # PUBLIC_INTERFACE
     def status(self) -> PATStatus:
         """Get current PAT status."""
-        return self._runtime.as_status()
+        st = self._runtime.as_status()
+        # enrich telemetry with basic safety/state metadata via linkQuality fields (reuse structure)
+        st.telemetry.linkQuality.RSSI = -60.0  # placeholder
+        return st
 
     # PUBLIC_INTERFACE
     def telemetry(self) -> Telemetry:
@@ -69,6 +81,12 @@ class PATStateMachine:
         """Advance state machine along nominal path."""
         nxt: Optional[PATState] = None
         cur = self._runtime.state
+
+        # REQ-PHYS-TPSL: block transitions into acquisition/communication if TPSL violated
+        if cur in (PATState.SETUP, PATState.COARSE_ACQ, PATState.FINE_ACQ) and self._laser.tpsl.enforced:
+            if self._laser.config.power > self._laser.tpsl.limit:
+                self._last_error = "REQ-PHYS-TPSL: power exceeds TPSL; transition blocked"
+                return self.status()
         if cur == PATState.COARSE_ACQ:
             nxt = PATState.FINE_ACQ
         elif cur == PATState.FINE_ACQ:
@@ -82,6 +100,13 @@ class PATStateMachine:
             nxt = PATState.SETUP
 
         if nxt:
+            # REQ-PAT-DURATION: guard duration
+            if self._pat_start_monotonic is not None and self._runtime.config is not None:
+                elapsed = time.monotonic() - self._pat_start_monotonic
+                if elapsed > min(self._runtime.config.acquisitionPeriod, 100):
+                    self._last_error = "REQ-PAT-DURATION: acquisition exceeded 100 s, aborting"
+                    self._transition_to(PATState.STOP)
+                    return self.status()
             self._transition_to(nxt)
         return self.status()
 

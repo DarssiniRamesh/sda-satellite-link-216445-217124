@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .routers.pat import router as pat_router
-from .routers.laser import router as laser_router, am_router as am_cfg_router
+from .routers.laser import router as laser_router, am_router as am_cfg_router, enc_router as encoding_router
 from .routers.safety import router as safety_router
 from .routers.telemetry import router as telemetry_router
 
@@ -23,7 +23,8 @@ app = FastAPI(
         {"name": "meta", "description": "Informational endpoints"},
         {"name": "pat", "description": "Pointing, Acquisition, and Tracking control"},
         {"name": "laser", "description": "Laser configuration"},
-        {"name": "am", "description": "AM tracking tone configuration"},
+        {"name": "am", "description": "AM tracking tone configuration (REQ-PHYS-AM-TONE)"},
+        {"name": "laser", "description": "Encoding selection (REQ-PHYS-ENCODING)"},
         {"name": "telemetry", "description": "Telemetry retrieval and streaming"},
         {"name": "safety", "description": "Safety limits (TPSL)"},
         {"name": "power", "description": "Power management"},
@@ -45,6 +46,7 @@ app.add_middleware(
 app.include_router(pat_router)
 app.include_router(laser_router)
 app.include_router(am_cfg_router)
+app.include_router(encoding_router)
 app.include_router(safety_router)
 app.include_router(telemetry_router)
 
