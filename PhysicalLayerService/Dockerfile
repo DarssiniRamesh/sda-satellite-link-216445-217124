@@ -21,5 +21,5 @@ COPY .env /app/.env 2>/dev/null || true
 ENV PORT=3000
 EXPOSE 3000
 
-# Default command
+# Default command - module-based startup (no venv activation required)
 CMD [ "python", "-m", "app.main" ]

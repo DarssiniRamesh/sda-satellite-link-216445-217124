@@ -12,22 +12,42 @@ FastAPI service implementing Physical Layer control and telemetry for the SDA Sa
 ## Run locally
 
 1. Create and populate `.env` (see `.env.example`).
-2. Create virtual environment and install dependencies:
+2. Install dependencies (venv optional):
+   ```bash
+   pip install -r requirements.txt
+   ```
+   If you prefer a venv:
    ```bash
    python -m venv .venv
    . .venv/bin/activate
    pip install -r requirements.txt
    ```
-3. Start the service:
-   ```bash
-   python -m app.main
-   ```
-   or
-   ```bash
-   python app/server.py
-   ```
+3. Start the service (choose one):
+   - Using uvicorn module (recommended):
+     ```bash
+     python -m uvicorn app.main:app --host 0.0.0.0 --port 3000
+     ```
+   - Using provided script:
+     ```bash
+     HOST=0.0.0.0 PORT=3000 ./run.sh
+     ```
+   - Using Python:
+     ```bash
+     python -m app.main
+     ```
+     or
+     ```bash
+     python app/server.py
+     ```
 
 The app will listen on `0.0.0.0:${PORT}` (default 3000).
+
+### Preview/CI runner note
+Some runners invoke from the repo root using:
+```bash
+uvicorn main:app --host 0.0.0.0 --port 3000
+```
+This repository includes a root-level `main.py` shim that exposes `main:app` and imports from `PhysicalLayerService/app/main.py`, so the above command works without activating a virtualenv or modifying PYTHONPATH.
 
 ## Endpoints
 - `GET /health` -> 200 OK with status and timestamp
