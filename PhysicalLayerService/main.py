@@ -11,7 +11,7 @@ Notes:
 """
 
 # PUBLIC_INTERFACE
-from src.api.main import app
+from src.api.main import app  # FastAPI instance
 
 # Explicit module export for tooling and linters
 __all__ = ["app"]
