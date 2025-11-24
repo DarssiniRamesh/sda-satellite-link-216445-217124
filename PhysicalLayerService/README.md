@@ -25,6 +25,11 @@ export PORT=3000
 python -m app.main
 ```
 
+You can also start using the compatibility module path expected by some orchestrators:
+```
+uvicorn main:app --host 0.0.0.0 --port 3000
+```
+
 ### One-line startup without a pre-created virtualenv
 This repository includes a helper script that installs requirements (if missing) and starts the service:
 ```
@@ -38,4 +43,4 @@ PORT=3000 ./run.sh
 ## Notes
 - CORS is permissive for development and can be restricted later.
 - The preview/start mechanism in your environment can import `app.main:app` directly.
-- Correct Uvicorn import path: `app.main:app` (not `main:app`), however a compatibility shim at `main.py` has been provided so `uvicorn main:app` will also work if your orchestrator uses that path.
+- Correct Uvicorn import path: `app.main:app` is preferred, and a compatibility shim at `main.py` ensures `uvicorn main:app` also works if your orchestrator uses that path.

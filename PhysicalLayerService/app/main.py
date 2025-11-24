@@ -8,6 +8,7 @@ SERVICE_NAME = "PhysicalLayerService"
 DEFAULT_PORT = 3000
 
 # Create the FastAPI app with metadata for OpenAPI docs
+# PUBLIC_INTERFACE
 app = FastAPI(
     title=f"{SERVICE_NAME} API",
     description="FastAPI service scaffolding for the Physical Layer Service (PAT, laser control, modulation, telemetry).",
@@ -16,6 +17,8 @@ app = FastAPI(
         {"name": "health", "description": "Health and liveness checks"},
         {"name": "meta", "description": "Informational endpoints"},
     ],
+    contact={"name": "PhysicalLayerService", "url": "https://example.com"},
+    license_info={"name": "Proprietary"},
 )
 
 # Enable permissive CORS for now (can be tightened later)
@@ -30,19 +33,31 @@ app.add_middleware(
 # PUBLIC_INTERFACE
 @app.get("/", tags=["meta"], summary="Root info", description="Returns basic service identifier and status.")
 def root() -> Dict[str, Any]:
-    """Root endpoint returning service name and status."""
+    """Root endpoint returning service name and status.
+
+    Returns:
+        dict: A simple object containing service name and status.
+    """
     return {"name": SERVICE_NAME, "status": "running"}
 
 # PUBLIC_INTERFACE
 @app.get("/health", tags=["health"], summary="Health check", description="Simple health check returning {'status': 'ok'}.")
 def health() -> Dict[str, str]:
-    """Health endpoint used by orchestrators and monitoring."""
+    """Health endpoint used by orchestrators and monitoring.
+
+    Returns:
+        dict: Health status object with 'ok' if service is up.
+    """
     return {"status": "ok"}
 
 # PUBLIC_INTERFACE
 @app.get("/info", tags=["meta"], summary="Service metadata", description="Returns container metadata and runtime configuration hints.")
 def info() -> Dict[str, Any]:
-    """Informational endpoint exposing basic metadata for the container."""
+    """Informational endpoint exposing basic metadata for the container.
+
+    Returns:
+        dict: Service metadata including effective port and env details.
+    """
     port = int(os.getenv("PORT", DEFAULT_PORT))
     return {
         "service": SERVICE_NAME,

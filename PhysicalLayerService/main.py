@@ -12,7 +12,11 @@ from typing import Any
 
 # PUBLIC_INTERFACE
 def get_app() -> Any:
-    """Return the FastAPI app from the canonical module app.main."""
+    """Return the FastAPI app from the canonical module app.main.
+
+    Returns:
+        FastAPI: The FastAPI application instance defined in app.main.
+    """
     from app.main import app as _app
     return _app
 
